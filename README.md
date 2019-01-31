@@ -1,36 +1,44 @@
 ## Introduction
+
 bitcoin-tool is a simple tool written in C to convert Bitcoin keys to addresses,
 and various other conversions of keys.
 
 Disclaimer: THIS CODE IS EXPERIMENTAL, IT IS PROBABLY BUGGY. PLEASE DO NOT
-TRUST YOUR BITCOINS WITH IT.  IT IS EASY TO MAKE AN IRREVERSIBLE MISTAKE AND
+TRUST YOUR BITCOINS WITH IT. IT IS EASY TO MAKE AN IRREVERSIBLE MISTAKE AND
 SEND YOUR BITCOINS TO A ADDRESS WITH NO WAY OF GETTING THEM BACK.
 
 ## Build Instructions
+
 Run `make test` to compile and run all tests.
 
 ### Requirements
-* A C compiler
-* OpenSSL headers and libraries (with elliptic curve support)
-* GNU make : Packages: FreeBSD `gmake`
-* GNU bash (for running tests)
-* xxd (for running tests) : Packages: Linux `vim`, FreeBSD `vim` or `vim-lite`
+
+- A C compiler
+- OpenSSL headers and libraries (with elliptic curve support)
+- GNU make : Packages: FreeBSD `gmake`
+- GNU bash (for running tests)
+- xxd (for running tests) : Packages: Linux `vim`, FreeBSD `vim` or `vim-lite`
 
 ## Platform-specific Instructions
+
 ### Gentoo Linux
+
 Gentoo by default enables the `bindist` flag on the openssl package, which disables
-elliptic curve support, presumably because of software patent concerns.  Since
+elliptic curve support, presumably because of software patent concerns. Since
 the `openssh` package also has `bindist` USE-flag set, the USE-flag must be disabled
 in both, then re-emerged to get an OpenSSL library with elliptic curve support.
 
 ### FreeBSD
+
 Use `gmake` to process the Makefile.
 
 Tested on:
-* FreeBSD 10.4 amd64, clang 3.4.1
-* FreeBSD 11.1 amd64, clang 4.0.0
+
+- FreeBSD 10.4 amd64, clang 3.4.1
+- FreeBSD 11.1 amd64, clang 4.0.0
 
 ### Windows
+
 Tested on Windows 10 64-bit edition using Cygwin (64-bit) with
 `x86_64_w64_mingw32-gcc` compiler.
 
@@ -39,6 +47,7 @@ Requires Cygwin packages: `bash`, `make`, `mingw64-x86_64-gcc-core`, `openssl-de
 Use `make CC=other_cc` to specify a different compiler if needed.
 
 ## Description
+
 I created this because I couldn't find an offline tool or library able
 to create addresses from Bitcoin private keys, and as a learning exercise in
 Bitcoin address formats and ECDSA.
@@ -51,11 +60,12 @@ each one is referring to, especially when it is possible to make a costly
 mistake.
 
 I've tried to add as much sanity checking as possible, to remove the scope
-for errors and misinterpretation of data.  This sometimes boreders on the
-pedantic and annoying.  For example, if the file for `--input-file` contains
+for errors and misinterpretation of data. This sometimes boreders on the
+pedantic and annoying. For example, if the file for `--input-file` contains
 more data than is expected, then it'll refuse to process it at all.
 
 ### Command-line options
+
 ```
   --input-type : Input data type, must be one of :
       mini-private-key : 30 character Casascius mini private key
@@ -111,11 +121,14 @@ more data than is expected, then it'll refuse to process it at all.
       darkcoin-testnet
       jumbucks
       jumbucks-testnet
+      phore
+      phore-testnet
   --fix-base58check : Attempt to fix a Base58Check string by changing
                       characters until the checksum matches.
   --fix-base58check-change-chars : Maximum number of characters to change
                                    (default=3)
 ```
+
 The `mini-private-key` input-type requires --input to be a 30 character ASCII
 string in valid mini private key format and --input-format to be `raw`.
 
@@ -129,20 +142,23 @@ prefix must be specified via --network
 Let's manually generate a Bitcoin address and private key for the purpose of an offline wallet (cold storage).
 
 Create private key:
+
 ```
 $ openssl rand 32 > key.bin
 ```
 
 Inspect private key:
+
 ```
 $ hexdump -e '32/1 "%02X" "\n"' key.bin
 
 62A87AD3272B41E67108FEA10C57BA6ED609F2F7A2264A83B690CD45707090D1
 ```
 
-Convert private key to WIF (Wallet Import Format).  Since it is a raw key, the
+Convert private key to WIF (Wallet Import Format). Since it is a raw key, the
 network type must be explicitally set (to bitcoin in this case) because it
 cannot be determined from the raw key :
+
 ```
 $ ./bitcoin-tool \
     --network bitcoin \
@@ -155,11 +171,13 @@ $ ./bitcoin-tool \
 
 5JZjfs5wJv1gNkJXCmYpyj6VxciqPkwmK4yHW8zMmPN1PW7Hk7F
 ```
+
 Specifying --public-key-compression is mandatory because the WIF output is
 different depending on which public key compression type you choose, and there
 is no way to guess from a raw private key.
 
 Same again but compressed public key :
+
 ```
 $ ./bitcoin-tool \
     --network bitcoin \
@@ -178,6 +196,7 @@ an extra byte flag is stored to indicate that the public key should be compresse
 (the private key is exactly the same).
 
 Show address for uncompressed WIF private key:
+
 ```
 $ ./bitcoin-tool \
     --input-type private-key-wif \
@@ -190,6 +209,7 @@ $ ./bitcoin-tool \
 ```
 
 Show address for compressed WIF private key:
+
 ```
 $ ./bitcoin-tool \
     --input-type private-key-wif \
@@ -200,12 +220,14 @@ $ ./bitcoin-tool \
 
 1Lm2DPqbhsutDkKoK9ZPPUkDKnGxQfpJLW
 ```
+
 This demonstrates why it is necessary to be careful when converting raw private
 keys to addresses; the same private key will (almost definitely) result in two
 seperate addresses, one for each intermediate form of the public key.
 
 Convert the WIF private key to a QR code so we can print it and import it
 easily later:
+
 ```
 $ qrencode -d 300 -s 3 -l H 5JZjfs5wJv1gNkJXCmYpyj6VxciqPkwmK4yHW8zMmPN1PW7Hk7F -o privkey.png
 ```
@@ -216,6 +238,7 @@ import the private key into your wallet at a later time in order to spend them
 sign transactions with that key (not necessarily online).
 
 #### Generate address from random private key
+
 ```
 ./bitcoin-tool \
     --network bitcoin \
@@ -226,6 +249,7 @@ sign transactions with that key (not necessarily online).
     --output-format base58check \
     --public-key-compression compressed
 ```
+
 This outputs an address you can send Bitcoins to, if you want to loose them forever (because the private key is never output!).
 
 #### Poor-mans brainwallet
@@ -237,6 +261,7 @@ Hash a text phrase with SHA256, which is then used as the private key to generat
 This shows the `--output-type all` option, which spews out lots of unnecessary
 garbage which I can't imagine would ever be useful, but it does so because it can.
 So There.
+
 ```
 ./bitcoin-tool \
     --input-type private-key \
@@ -269,14 +294,16 @@ private-key.base58check:NVKW9zzMvs4LawZwJztUZdx3R27Gwc4Hg6WvqqQxHMFkbn3Wz
 #### Batch processing
 
 You can read multiple lines of input from a text file and process individually
-with the `--batch` option.  This requires the `--input-file` option to be
-set.  This will be faster than spawning a new instance of bitcoin-tool for
+with the `--batch` option. This requires the `--input-file` option to be
+set. This will be faster than spawning a new instance of bitcoin-tool for
 each line of a line - from a shell script, for example.
 
 **Generate 1000 random private keys in hex format**
+
 `keys=1000 ; openssl rand $[32*keys] | xxd -p -c32 > hexkeys`
 
 **Convert all the private keys to addresses**
+
 ```
 ./bitcoin-tool \
 --batch \
@@ -287,4 +314,4 @@ each line of a line - from a shell script, for example.
 --public-key-compression compressed \
 --output-type address \
 --output-format base58check
-
+```

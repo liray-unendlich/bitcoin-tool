@@ -183,6 +183,24 @@ https://github.com/jl777/komodo/blob/a86845f3dc5444d24f4420908125f4c4cb58b4ff/sr
 		.script_prefix           = 85,
 		.private_key_prefix      = 60+128
 	},
+/*
+Phore:
+public keys / script / private keys:
+https://github.com/phoreproject/Phore/blob/506066f79c6c649e646ba6331377ba2126672929/src/chainparams.cpp#L188
+https://github.com/phoreproject/Phore/blob/506066f79c6c649e646ba6331377ba2126672929/src/chainparams.cpp#L281
+*/
+	{
+		.name                    = "phore",
+		.public_key_prefix       = 55,
+		.script_prefix           = 13,
+		.private_key_prefix      = 84+128
+	},
+	{
+		.name                    = "phore-testnet",
+		.public_key_prefix       = 139,
+		.script_prefix           = 196,
+		.private_key_prefix      = 111+128
+	},
 };
 
 BitcoinKeyPrefix BitcoinNetworkType_GetPublicKeyPrefix(const struct BitcoinNetworkType *n)
